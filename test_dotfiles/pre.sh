@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-echo "[pre.sh]"
+echo "[pre.sh] started"
+
+echo "[pre.sh] done"
