@@ -7,6 +7,7 @@ pub enum AppError {
     CurrentDirNotFound,
     CanonicalizeError { what: String },
     LinkingError { from: String, what: String },
+    ScriptError { script: String, what: String },
 }
 
 impl AppError {

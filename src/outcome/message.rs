@@ -8,6 +8,7 @@ pub enum AppMessage {
     PackageSkipped { package: String },
     LinkingPackage { package: String },
     LinkCreated { from: String, to: String },
+    ScriptFinished { script: String },
 }
 
 impl AppMessage {

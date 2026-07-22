@@ -55,6 +55,19 @@ fn run() -> AppResult<()> {
     }
     .emit();
 
+    let pre_script = source.join("pre.sh");
+    if pre_script.exists() {
+        if let Err(e) = duct::cmd!("sh", &pre_script).dir(&source).run() {
+            return Err(AppError::ScriptError {
+                script: "pre".to_string(),
+                what: e.to_string(),
+            });
+        }
+        AppMessage::ScriptFinished {
+            script: "pre".to_string(),
+        }.emit();
+    }
+
     for package in &args.packages {
         let package_dir = source.join(package);
 
@@ -72,6 +85,19 @@ fn run() -> AppResult<()> {
         .emit();
 
         link_recursive(&package_dir, &package_dir, &target)?;
+    }
+    
+    let post_script = source.join("post.sh");
+    if post_script.exists() {
+        if let Err(e) = duct::cmd!("sh", &post_script).dir(&source).run() {
+            return Err(AppError::ScriptError {
+                script: "post".to_string(),
+                what: e.to_string(),
+            });
+        }
+        AppMessage::ScriptFinished {
+            script: "post".to_string(),
+        }.emit();
     }
 
     Ok(())
