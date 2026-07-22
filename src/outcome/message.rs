@@ -1,17 +1,21 @@
-use serde::{
-    Serialize,
-    Deserialize,
-};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(tag = "msg", rename_all = "snake_case")]
 pub enum AppMessage {
+    UsingSourcePath { path: String },
+    UsingTargetPath { path: String },
+    PackageSkipped { package: String },
+    LinkingPackage { package: String },
+    LinkCreated { from: String, to: String },
 }
 
 impl AppMessage {
-    pub fn emit(&self) {
+    pub fn to_json(&self) -> String {
         // EXPECT: infallible serialization.
-        let json = serde_json::to_string(self).expect("serialize_fail");
-        eprintln!("{}", json);
+        serde_json::to_string(self).expect("serialize_fail")
+    }
+    pub fn emit(&self) {
+        eprintln!("{}", self.to_json());
     }
 }
