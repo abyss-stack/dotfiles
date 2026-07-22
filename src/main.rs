@@ -2,13 +2,17 @@ mod args;
 mod outcome;
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::ExitCode;
 
 use clap::Parser;
 
 use crate::args::AppArgs;
-use crate::outcome::{AppError, AppMessage, AppResult};
+use crate::outcome::{
+    AppMessage,
+    AppError,
+    AppResult,
+};
 
 fn main() -> ExitCode {
     match run() {
@@ -23,10 +27,10 @@ fn main() -> ExitCode {
 fn run() -> AppResult<()> {
     let args = AppArgs::parse();
 
-    //Where to take dotfiles from.
     let raw_source = match args.source {
         Some(s) => s,
-        None => std::env::current_dir().map_err(|_| AppError::CurrentDirNotFound)?,
+        None => std::env::current_dir()
+            .map_err(|_| AppError::CurrentDirNotFound)?,
     };
     let source = raw_source
         .canonicalize()
@@ -39,10 +43,10 @@ fn run() -> AppResult<()> {
     }
     .emit();
 
-    // Where to create symlinks.
     let raw_target = match args.target {
         Some(t) => t,
-        None => dirs::home_dir().ok_or(AppError::HomeDirNotFound)?,
+        None => dirs::home_dir()
+            .ok_or(AppError::HomeDirNotFound)?,
     };
     let target = raw_target
         .canonicalize()
@@ -57,7 +61,9 @@ fn run() -> AppResult<()> {
 
     let pre_script = source.join("pre.sh");
     if pre_script.exists() {
-        if let Err(e) = duct::cmd!("sh", &pre_script).dir(&source).run() {
+        if let Err(e) = duct::cmd!("sh", &pre_script)
+            .dir(&source)
+            .run() {
             return Err(AppError::ScriptError {
                 script: "pre".to_string(),
                 what: e.to_string(),
@@ -89,7 +95,9 @@ fn run() -> AppResult<()> {
     
     let post_script = source.join("post.sh");
     if post_script.exists() {
-        if let Err(e) = duct::cmd!("sh", &post_script).dir(&source).run() {
+        if let Err(e) = duct::cmd!("sh", &post_script)
+            .dir(&source)
+            .run() {
             return Err(AppError::ScriptError {
                 script: "post".to_string(),
                 what: e.to_string(),
@@ -107,6 +115,8 @@ fn link_recursive(base_dir: &Path, current_dir: &Path, target_base: &Path) -> Ap
     if let Ok(entries) = fs::read_dir(current_dir) {
         for entry in entries.flatten() {
             let src_path = entry.path();
+
+            // UNWRAP: Safe. `src_path` is strictly a descendant of `base_dir`.
             let rel_path = src_path.strip_prefix(base_dir).unwrap();
             let dest_path = target_base.join(rel_path);
 
