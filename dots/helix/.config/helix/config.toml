@@ -1,0 +1,23 @@
+theme = "everforest_dark"
+
+[editor]
+line-number = "absolute"
+mouse = true
+cursorline = true
+auto-pairs = true
+color-modes = true
+true-color = true
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = true
+
+[editor.file-picker]
+hidden = false
+git-ignore = false
+ignore = false

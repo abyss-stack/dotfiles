@@ -1,86 +1,64 @@
 mod args;
-mod outcome;
-
-use crate::outcome::{
-    AppMessage,
-    AppError,
-    AppResult,
-};
-use crate::args::{
-    AppArgs,
-};
-
 use clap::Parser;
-use std::process::ExitCode;
-use std::path::{Path, PathBuf};
 use std::fs;
-use std::io;
+use std::path::{Path, PathBuf};
 
-fn main() -> ExitCode {
-    match run() {
-        Ok(_) => ExitCode::SUCCESS,
-        Err(err) => {
-            eprintln!("{}", err);
-            ExitCode::FAILURE
-        },
-    }
-}
+fn main() {
+    let args = args::AppArgs::parse();
 
-fn run() -> AppResult<()> {
-    let args = AppArgs::parse();
-
-    let target_base = args.target.clone().unwrap_or_else(|| {
-        PathBuf::from(std::env::var("HOME").expect("HOME env var not set"))
+    let target_base = args.target.unwrap_or_else(|| {
+        PathBuf::from(std::env::var("HOME").expect("ERROR: HOME env var not set"))
     });
 
-    // Перебираем каждый пакет из переданного списка Vec<String>
+    let source_base = args
+        .source
+        .unwrap_or_else(|| std::env::current_dir().expect("ERROR: Cannot get current directory"));
+
     for package in &args.packages {
-        println!("\n--- Обработка пакета: {} ---", package);
+        let src_package_dir = source_base.join(package);
 
-        // Путь к исходному пакету, например: ./nvim
-        let package_dir = args.source.join(package);
-        if !package_dir.exists() {
-            eprintln!("Ошибка: Пакет '{:?}' не найден. Пропуск.", package_dir);
-            continue; // Переходим к следующему пакету вместо выхода
+        if !src_package_dir.exists() {
+            eprintln!("FAIL: Папка пакета {:?} не существует.", src_package_dir);
+            continue;
         }
 
-        // Запуск линковки для текущего пакета
-        match link_dir(&package_dir, &package_dir, &target_base) {
-            Ok(_) => println!("Успешно прилинкован пакет: {}", package),
-            Err(e) => eprintln!("Ошибка при обработке пакета {}: {}", package, e),
-        }
+        println!("\n--- Линковка пакета: {} ---", package);
+        link_recursive(&src_package_dir, &src_package_dir, &target_base);
+        println!("Пакет '{}' успешно применён!", package);
     }
-
-    Ok(())    
 }
 
-fn link_dir(base_dir: &Path, current_dir: &Path, target_base: &Path) -> io::Result<()> {
-    for entry in fs::read_dir(current_dir)? {
-        let entry = entry?;
-        let src_path = entry.path();
-        
-        // Вычисляем относительный путь от корня пакета (например: .config/nvim/init.lua)
-        let rel_path = src_path.strip_prefix(base_dir).unwrap();
-        let dest_path = target_base.join(rel_path);
+fn link_recursive(base_dir: &Path, current_dir: &Path, target_base: &Path) {
+    if let Ok(entries) = fs::read_dir(current_dir) {
+        for entry in entries.flatten() {
+            let src_path = entry.path();
+            let rel_path = src_path.strip_prefix(base_dir).unwrap();
+            let dest_path = target_base.join(rel_path);
 
-        if src_path.is_dir() {
-            // Если это папка, воссоздаем структуру в целевой директории и идем глубже
-            fs::create_dir_all(&dest_path)?;
-            link_dir(base_dir, &src_path, target_base)?;
-        } else {
-            // Если это файл, создаем символическую ссылку
-            if dest_path.exists() {
-                println!("Пропущено (уже существует): {:?}", dest_path);
-                continue;
+            if src_path.is_dir() {
+                // Если это папка, создаем её в целевом каталоге и идём глубже
+                let _ = fs::create_dir_all(&dest_path);
+                link_recursive(base_dir, &src_path, target_base);
+            } else {
+                // Если файл или старая симлинка уже есть — сносим
+                if dest_path.exists() || fs::symlink_metadata(&dest_path).is_ok() {
+                    let _ = fs::remove_file(&dest_path);
+                    let _ = fs::remove_dir_all(&dest_path);
+                }
+
+                // Создаем родительские папки, если их нет
+                if let Some(parent) = dest_path.parent() {
+                    let _ = fs::create_dir_all(parent);
+                }
+
+                let abs_src = fs::canonicalize(&src_path).unwrap_or(src_path);
+
+                if let Err(e) = std::os::unix::fs::symlink(&abs_src, &dest_path) {
+                    eprintln!("Ошибка линковки {:?}: {}", dest_path, e);
+                } else {
+                    println!("Создан линк: {:?} -> {:?}", dest_path, abs_src);
+                }
             }
-            
-            // Превращаем исходный путь в абсолютный для корректной работы ссылки
-            let abs_src = fs::canonicalize(&src_path)?;
-            
-            std::os::unix::fs::symlink(&abs_src, &dest_path)?;
-                        
-            println!("Создана ссылка: {:?} -> {:?}", dest_path, abs_src);
         }
     }
-    Ok(())
 }

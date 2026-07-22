@@ -1,0 +1,35 @@
+[[language]]
+name = "python"
+language-servers = [ { name = "pyright" } ]
+
+[[language]]
+name = "rust"
+language-servers = [ { name = "rust-analyzer" } ]
+
+[language-server.rust-analyzer]
+command = "rustup"
+args = ["run", "stable", "rust-analyzer"]
+
+[[language]]
+name = "c"
+language-servers = [ { name = "clangd" } ]
+
+[[language]]
+name = "cpp"
+language-servers = [ { name = "clangd" } ]
+
+[language-server.clangd]
+command = "clangd"
+args = ["--compile-commands-dir=.", "--background-index"]
+
+[[language]]
+name = "typescript"
+language-servers = [ { name = "typescript-language-server" } ]
+
+[[language]]
+name = "javascript"
+language-servers = [ { name = "typescript-language-server" } ]
+
+[language-server.typescript-language-server]
+command = "typescript-language-server"
+args = ["--stdio"]
