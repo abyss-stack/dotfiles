@@ -3,14 +3,13 @@ use std::path::{Path, PathBuf};
 
 use crate::outcome::{AppError, AppMessage, AppResult};
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Serialize, Deserialize)]
 pub enum Strategy {
     Copy,
     Symlink,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Package {
     pub name: String,
     pub source: PathBuf,
@@ -18,7 +17,7 @@ pub struct Package {
     pub strategy: Strategy,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Config {
     pub packages: Vec<Package>,
 }
@@ -31,18 +30,17 @@ impl Config {
 
         AppMessage::LoadingConfig {
             path: path.to_path_buf(),
-        }.emit();
+        }
+        .emit();
 
-        let data = std::fs::read_to_string(path)
-            .map_err(|e| AppError::ConfigLoadError {
-                path: path.to_path_buf(),
-                what: e.to_string(),
-            })?;
+        let data = std::fs::read_to_string(path).map_err(|e| AppError::ConfigLoad {
+            path: path.to_path_buf(),
+            what: e.to_string(),
+        })?;
 
-        let config: Self = serde_json::from_str(&data)
-            .map_err(|e| AppError::ConfigParseError {
-                what: e.to_string(),
-            })?;
+        let config: Self = serde_json::from_str(&data).map_err(|e| AppError::ConfigParse {
+            what: e.to_string(),
+        })?;
 
         AppMessage::ConfigLoaded.emit();
 

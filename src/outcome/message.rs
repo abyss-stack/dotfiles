@@ -3,12 +3,17 @@ use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
-pub enum AppMessage {    
+pub enum AppMessage {
     /* config */
     LoadingConfig { path: PathBuf },
     ConfigLoaded,
 
-    /* main */
+    /* symlink */
+    ApplySymlink { package: String },
+
+    /* copy */
+    ApplyCopy { package: String },
+
 }
 
 impl AppMessage {

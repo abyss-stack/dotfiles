@@ -5,11 +5,22 @@ use std::path::PathBuf;
 #[serde(tag = "fail", rename_all = "snake_case")]
 pub enum AppError {
     /* config */
-    ConfigLoadError {
-        path: PathBuf,
+    ConfigLoad { path: PathBuf, what: String },
+    ConfigParse { what: String },
+
+    /* symlink */
+    Symlink {
+        package: String,
+        source: PathBuf,
+        target: PathBuf,
         what: String,
     },
-    ConfigParseError {
+
+    /* copy */
+    Copy {
+        package: String,
+        source: PathBuf,
+        target: PathBuf,
         what: String,
     },
 }

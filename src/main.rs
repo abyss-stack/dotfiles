@@ -7,13 +7,14 @@ mod core;
 mod outcome;
 
 use std::process::ExitCode;
-//use std::path::Path;
 
 use clap::Parser;
 
-use outcome::{/*AppError, AppMessage, */AppResult};
 use cli::{AppArgs, Commands};
-use core::config::Config;
+use core::config::{Config, Strategy};
+use outcome::AppResult;
+
+use crate::core::{copy::apply_copy, symlink::apply_symlink};
 
 fn main() -> ExitCode {
     match run() {
@@ -33,10 +34,14 @@ fn run() -> AppResult<()> {
         Commands::Apply => {
             let config = Config::load(&args.config)?;
 
-            println!("{:?}", config);
-        },
+            for pkg in &config.packages {
+                match pkg.strategy {
+                    Strategy::Copy => apply_copy(pkg)?,
+                    Strategy::Symlink => apply_symlink(pkg)?,
+                }
+            }
+        }
     }
-    
+
     Ok(())
 }
-

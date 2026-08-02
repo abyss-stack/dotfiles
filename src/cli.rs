@@ -12,7 +12,7 @@ pub enum Commands {
 pub struct AppArgs {
     #[arg(long, default_value = "/etc/abyss-dotfiles/config.json")]
     pub config: PathBuf,
-    
+
     #[command(subcommand)]
     pub command: Commands,
 }
