@@ -1,0 +1,16 @@
+{
+  "packages": [
+    {
+      "name": "bash",
+      "source": "${HOME}/.dotfiles/bash",
+      "target": "${HOME}",
+      "strategy": "symlink"
+    },
+    {
+      "name": "helix",
+      "source": "${HOME}/.dotfiles/helix",
+      "target": "${XDG_CONFIG_HOME}/helix",
+      "strategy": "copy"
+    }
+  ]
+}

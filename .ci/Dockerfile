@@ -26,6 +26,7 @@ ENV VERSION=$VERSION \
     RUSTFLAGS="-C target-feature=+crt-static -C link-self-contained=yes"
 
 COPY src/ src/
+COPY template.json ./
 
 # RUN tokei ./src -o json > /app/codebase.json
 RUN cargo clippy --target $TARGET --all-targets --locked -- -D warnings \
