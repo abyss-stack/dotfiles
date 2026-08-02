@@ -5,7 +5,6 @@ A flexible dotfiles manager.
 ## Features
 * **Config-driven**: Define your dotfiles layout in a single JSON config.
 * **Multiple strategies**: To create symlinks or copy the whole package.
-* **Variable substitution**: Support for variables such as ${HOME}.
 * **Package-oriented**: Organize dotfiles as reusable packages.
 * **SSOT**: The provided config acts as the Single Source of Truth (SSOT).
 * **JSON Output**: Output uses a strict JSON contract and is easy to parse.

@@ -2,14 +2,14 @@
   "packages": [
     {
       "name": "bash",
-      "source": "${HOME}/.dotfiles/bash",
-      "target": "${HOME}",
+      "source": "/home/rc502/.dotfiles/bash",
+      "target": "/home/rc502",
       "strategy": "symlink"
     },
     {
       "name": "helix",
-      "source": "${HOME}/.dotfiles/helix",
-      "target": "${XDG_CONFIG_HOME}/helix",
+      "source": "/home/rc502/.dotfiles/helix",
+      "target": "/home/rc502/.config/helix",
       "strategy": "copy"
     }
   ]
