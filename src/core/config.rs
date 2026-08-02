@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use crate::outcome::{AppError, AppMessage, AppResult};
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Strategy {
     Copy,
     Symlink,
